@@ -1,6 +1,7 @@
 # Secretos y entorno local
 .env
 *.env.local
+anexo-entregable-y-video.md
 
 # Datos y volcados locales
 pgdata/

@@ -145,7 +145,6 @@ docker compose up -d
 ├── modelo-conceptual.mmd        Diagrama conceptual Mermaid
 ├── modelo-logico.mmd            Diagrama lógico Mermaid
 ├── diccionario-datos.md         Columnas, tipos, nulabilidad y restricciones
-├── anexo-entregable-y-video.md  Material de apoyo para la entrega y el video
 ├── compose.yaml                 PostgreSQL 18, healthcheck y volumen persistente
 ├── .env.example                 Plantilla de configuración local sin secretos
 ├── .gitignore                   Excluye .env, datos locales y archivos de editor
@@ -190,7 +189,7 @@ git commit -m "chore: preparar entorno reproducible con Docker Compose"
 git add narrativa-y-reglas.md modelo-conceptual.mmd modelo-logico.mmd diccionario-datos.md
 git commit -m "docs: documentar análisis y modelos relacional y conceptual"
 
-git add sql/01_schema.sql sql/02_seed.sql sql/03_queries.sql sql/04_invalid_tests.sql anexo-entregable-y-video.md
+git add sql/01_schema.sql sql/02_seed.sql sql/03_queries.sql sql/04_invalid_tests.sql
 git commit -m "feat: implementar esquema, datos, consultas y pruebas SQL"
 
 git status --short
@@ -225,4 +224,3 @@ Verifica en GitHub que la visibilidad sea pública, que los tres commits se haya
 - [Modelo conceptual](modelo-conceptual.mmd)
 - [Modelo lógico](modelo-logico.mmd)
 - [Diccionario de datos](diccionario-datos.md)
-- [Anexo de entrega y guion del video](anexo-entregable-y-video.md)
