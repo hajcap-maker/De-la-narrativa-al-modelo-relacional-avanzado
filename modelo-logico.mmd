@@ -1,0 +1,140 @@
+%% =====================================================================
+%% ConectaTech - MODELO LÓGICO (idéntico al esquema de sql/01_schema.sql)
+%% PK = clave primaria | FK = clave foránea | UK = restricción UNIQUE
+%% Estrategia de jerarquías: tabla por supertipo y por subtipo, con la PK del subtipo
+%% = FK al supertipo. En SESION el discriminador tipo_sesion y la FK compuesta
+%% (id_sesion, tipo_sesion) garantizan la disjunción; triggers diferidos garantizan la totalidad.
+%% =====================================================================
+erDiagram
+    sede ||--|{ sala : "id_sede"
+    sede |o--o{ edicion : "id_sede (opcional)"
+    edicion ||--o{ sesion : "id_edicion"
+    sala |o--o{ sesion : "id_sala (opcional)"
+    sesion ||--o| charla : "PK compartida"
+    sesion ||--o| taller : "PK compartida"
+    sesion |o--o| info_transmision : "PK compartida 1:1"
+    sesion ||--o{ prerrequisito_sesion : "id_sesion (dependiente)"
+    sesion ||--o{ prerrequisito_sesion : "id_sesion_prerrequisito (requerida)"
+    persona ||--o{ participacion_edicion : "id_persona"
+    edicion ||--o{ participacion_edicion : "id_edicion"
+    participacion_edicion |o--o| asistente : "PK compartida"
+    participacion_edicion |o--o| ponente : "PK compartida"
+    tipo_acreditacion ||--o{ asistente : "id_tipo_acreditacion"
+    asistente ||--o{ inscripcion_sesion : "id_participacion"
+    sesion ||--o{ inscripcion_sesion : "id_sesion"
+    ponente ||--o{ asignacion_ponente : "id_participacion"
+    sesion ||--o{ asignacion_ponente : "id_sesion"
+    empresa ||--o{ acuerdo_patrocinio : "id_empresa"
+    edicion ||--o{ acuerdo_patrocinio : "id_edicion"
+
+    sede {
+        integer id_sede PK "identity"
+        varchar nombre UK "UK con ciudad"
+        varchar direccion
+        varchar ciudad UK "UK con nombre"
+        varchar pais
+    }
+    sala {
+        integer id_sala PK "identity"
+        integer id_sede FK "UK con nombre"
+        varchar nombre UK "UK con id_sede"
+        integer capacidad "CHECK mayor que 0"
+    }
+    edicion {
+        integer id_edicion PK "identity"
+        integer id_sede FK "NULL si es virtual"
+        varchar nombre UK "UK con anio"
+        smallint anio UK "UK con nombre"
+        varchar ciudad
+        varchar modalidad "presencial virtual hibrida"
+        date fecha_inicio
+        date fecha_fin "CHECK mayor o igual a inicio"
+        varchar estado "DEFAULT borrador"
+    }
+    tipo_acreditacion {
+        integer id_tipo_acreditacion PK "identity"
+        varchar nombre UK
+        varchar descripcion
+    }
+    empresa {
+        integer id_empresa PK "identity"
+        varchar nombre UK
+        varchar pais
+        varchar sitio_web "NULL permitido"
+    }
+    persona {
+        integer id_persona PK "identity"
+        varchar nombre
+        varchar correo UK
+        varchar pais
+    }
+    participacion_edicion {
+        integer id_participacion PK "identity"
+        integer id_persona FK "UK con id_edicion"
+        integer id_edicion FK "UK con id_persona"
+        date fecha_registro "DEFAULT CURRENT_DATE"
+    }
+    asistente {
+        integer id_participacion PK "PK y FK"
+        integer id_tipo_acreditacion FK
+    }
+    ponente {
+        integer id_participacion PK "PK y FK"
+        text biografia "minimo 20 caracteres"
+    }
+    sesion {
+        integer id_sesion PK "identity"
+        integer id_edicion FK "UK con titulo"
+        integer id_sala FK "NULL si es virtual"
+        varchar tipo_sesion UK "UK con id_sesion - charla o taller"
+        varchar titulo UK "UK con id_edicion"
+        text resumen
+        date fecha
+        time hora_inicio
+        time hora_fin "CHECK mayor que hora_inicio - EXCLUDE por sala"
+    }
+    charla {
+        integer id_sesion PK "PK y FK"
+        varchar tipo_sesion FK "DEFAULT charla - FK compuesta"
+        smallint minutos_preguntas "CHECK entre 0 y 120"
+    }
+    taller {
+        integer id_sesion PK "PK y FK"
+        varchar tipo_sesion FK "DEFAULT taller - FK compuesta"
+        integer cupo_practico "CHECK mayor que 0"
+        text requisitos_materiales
+    }
+    info_transmision {
+        integer id_sesion PK "PK y FK - relacion 1 a 1"
+        varchar plataforma
+        varchar url_transmision "CHECK inicia con https"
+        varchar codigo_acceso "NULL permitido"
+        boolean grabacion_disponible "DEFAULT false"
+    }
+    prerrequisito_sesion {
+        integer id_sesion PK "PK y FK"
+        integer id_sesion_prerrequisito PK "PK y FK - CHECK distinto de id_sesion"
+    }
+    inscripcion_sesion {
+        integer id_participacion PK "PK y FK hacia asistente"
+        integer id_sesion PK "PK y FK"
+        date fecha_inscripcion "DEFAULT CURRENT_DATE"
+        varchar estado "DEFAULT pendiente"
+        boolean asistio "NULL antes del evento"
+    }
+    asignacion_ponente {
+        integer id_sesion PK "PK y FK - UK con orden_programa"
+        integer id_participacion PK "PK y FK hacia ponente"
+        varchar rol_ponente "DEFAULT principal"
+        smallint orden_programa UK "UK con id_sesion - mayor que 0"
+    }
+    acuerdo_patrocinio {
+        integer id_acuerdo PK "identity"
+        integer id_empresa FK "indice unico parcial si vigente"
+        integer id_edicion FK "indice unico parcial si vigente"
+        varchar categoria
+        numeric monto "CHECK mayor que 0"
+        char moneda "DEFAULT USD"
+        date fecha_confirmacion
+        varchar estado "DEFAULT vigente"
+    }

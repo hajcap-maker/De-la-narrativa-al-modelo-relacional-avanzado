@@ -1,0 +1,113 @@
+%% =====================================================================
+%% ConectaTech - MODELO CONCEPTUAL (sin claves foráneas ni columnas técnicas)
+%% Leyenda de cardinalidad: ||  exactamente uno | o|  cero o uno | o{  cero o muchos | |{  uno o muchos
+%% JERARQUÍAS (Mermaid no tiene símbolo nativo, se anotan en la etiqueta):
+%%   H1  SESION -> CHARLA | TALLER                    DISJUNTA y TOTAL   (exactamente un subtipo)
+%%   H2  PARTICIPACION_EDICION -> ASISTENTE | PONENTE SOLAPADA y TOTAL  (uno o ambos, nunca ninguno)
+%% RELACIÓN 1:1      SESION -- INFO_TRANSMISION
+%% RELACIONES 1:N    SEDE-SALA, SEDE-EDICION, EDICION-SESION, SALA-SESION, PERSONA-PARTICIPACION_EDICION ...
+%% RELACIONES N:M    ASISTENTE-SESION, PONENTE-SESION, EMPRESA-EDICION (entidades asociativas)
+%% RELACIÓN RECURSIVA SESION requiere SESION (N:M reflexiva)
+%% =====================================================================
+erDiagram
+    SEDE ||--|{ SALA : "tiene (1:N)"
+    SEDE |o--o{ EDICION : "aloja (1:N, edicion virtual sin sede)"
+    EDICION ||--o{ SESION : "programa (1:N)"
+    SALA |o--o{ SESION : "se realiza en (1:N, sesion virtual sin sala)"
+
+    SESION ||--o| CHARLA : "ES_UN charla (jerarquia H1 disjunta total)"
+    SESION ||--o| TALLER : "ES_UN taller (jerarquia H1 disjunta total)"
+    SESION |o--o| INFO_TRANSMISION : "se transmite con (1:1)"
+    SESION }o--o{ SESION : "requiere haber completado (recursiva N:M)"
+
+    PERSONA ||--o{ PARTICIPACION_EDICION : "se registra como"
+    EDICION ||--o{ PARTICIPACION_EDICION : "recibe"
+    PARTICIPACION_EDICION |o--o| ASISTENTE : "ES_UN asistente (jerarquia H2 solapada total)"
+    PARTICIPACION_EDICION |o--o| PONENTE : "ES_UN ponente (jerarquia H2 solapada total)"
+    TIPO_ACREDITACION ||--o{ ASISTENTE : "elige"
+
+    ASISTENTE ||--o{ INSCRIPCION_SESION : "realiza"
+    SESION ||--o{ INSCRIPCION_SESION : "recibe"
+    PONENTE ||--o{ ASIGNACION_PONENTE : "interviene"
+    SESION ||--o{ ASIGNACION_PONENTE : "cuenta con"
+    EMPRESA ||--o{ ACUERDO_PATROCINIO : "firma"
+    EDICION ||--o{ ACUERDO_PATROCINIO : "es apoyada por"
+
+    SEDE {
+        string nombre
+        string direccion
+        string ciudad
+        string pais
+    }
+    SALA {
+        string nombre
+        int capacidad
+    }
+    EDICION {
+        string nombre
+        int anio
+        string ciudad
+        string modalidad
+        date fecha_inicio
+        date fecha_fin
+        string estado_preparacion
+    }
+    SESION {
+        string titulo
+        string resumen
+        date fecha
+        time hora_inicial
+        time hora_final
+        string tipo "charla o taller"
+    }
+    CHARLA {
+        int minutos_para_preguntas
+    }
+    TALLER {
+        int cupo_practico
+        string requisitos_materiales
+    }
+    INFO_TRANSMISION {
+        string plataforma
+        string url
+        string codigo_acceso
+        boolean grabacion_disponible
+    }
+    PERSONA {
+        string nombre
+        string correo UK
+        string pais
+    }
+    PARTICIPACION_EDICION {
+        date fecha_registro
+    }
+    ASISTENTE {
+        string tipo_acreditacion_elegido
+    }
+    PONENTE {
+        string biografia_profesional
+    }
+    TIPO_ACREDITACION {
+        string nombre
+        string descripcion
+    }
+    INSCRIPCION_SESION {
+        date fecha
+        string estado
+        boolean asistio "se conoce despues del evento"
+    }
+    ASIGNACION_PONENTE {
+        string rol_del_ponente
+        int orden_en_programa
+    }
+    EMPRESA {
+        string nombre
+        string pais
+        string sitio_web
+    }
+    ACUERDO_PATROCINIO {
+        string categoria
+        decimal monto
+        date fecha_confirmacion
+        string estado "solo uno vigente por empresa y edicion"
+    }
