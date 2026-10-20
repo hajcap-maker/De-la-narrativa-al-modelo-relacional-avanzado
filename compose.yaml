@@ -1,0 +1,30 @@
+# ConectaTech · PostgreSQL 18 con inicialización automática desde ./sql
+# Uso:  cp .env.example .env  &&  docker compose up -d
+services:
+  db:
+    image: postgres:18.0-alpine
+    container_name: conectatech-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Datos persistentes. En PostgreSQL 18+ la imagen oficial espera el volumen en /var/lib/postgresql.
+      - pgdata:/var/lib/postgresql
+      # Los .sql se ejecutan en orden alfabético SOLO cuando el volumen está vacío:
+      # 01_schema.sql -> 02_seed.sql -> 03_queries.sql -> 04_invalid_tests.sql
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  pgdata:

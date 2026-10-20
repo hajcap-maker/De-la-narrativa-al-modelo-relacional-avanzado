@@ -1,0 +1,16 @@
+# Secretos y entorno local
+.env
+*.env.local
+
+# Datos y volcados locales
+pgdata/
+*.dump
+*.backup
+*.log
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
