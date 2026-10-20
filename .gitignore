@@ -2,6 +2,8 @@
 .env
 *.env.local
 anexo-entregable-y-video.md
+entregable-canvas.docx
+entregable-canvas.pdf
 
 # Datos y volcados locales
 pgdata/
